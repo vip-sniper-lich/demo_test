@@ -94,7 +94,6 @@ public class Controler
     //проверка роли
     public static boolean get_accept (String login, String password, Point point)
     {
-        String user_role;    //id роли в бд
         //запрос
         try
         {
@@ -102,18 +101,13 @@ public class Controler
 
             if (user == null)
             {
-                throw new New_Exception("Пароль или логин введены не правильно");
+                throw new New_Exception("Пользователя с данным логином не существует!!1");
             }
             else
             {
                 String query = "SELECT status, date_open FROM staff WHERE id = '" + user.getIdUser() + "';" ;
-                //String query = "SELECT true FROM staff WHERE id = '" + user.getIdUser() + "' AND + password = '" + password + "';" ;
-                /*String query2 = "SELECT name.last_name, name.first_name, name.patronymic, rols.role FROM staff \n" +
-                        "JOIN name ON staff.id_name = name.id\n" +
-                        "JOIN rols ON rols.id_role = staff.id_role\n" +
-                        "WHERE staff.id = '" + user.getIdUser() + "';";*/
                 T<ResultSet> res = query("lox", "1111", query);
-                if(res.getItem() != null)
+                if(res.getItem().next())
                 {
                     ResultSet result = res.getItem();
                     if(!result.getString(1).equals("bloced"))
@@ -121,33 +115,86 @@ public class Controler
                         LocalDate currentTime = LocalDate.now();
                         if (ChronoUnit.DAYS.between(currentTime, LocalDate.parse(result.getString(2))) > 31)
                         {
-                            if (result.getString(1).equals("active"))
+                            if (!result.getString(1).equals("bloced"))
                             {
-                                query("lox", "1111", "UPDATE staff SET status = " + "bloced" + " WHERE id ='" + user.getIdUser() + "';");
-                            }
-                            else if (result.getString(1).equals("new"))
-                            {
-
+                                query("lox", "1111", "UPDATE staff SET status = 'bloced' WHERE id ='" + user.getIdUser() + "';");
+                                throw new New_Exception("Вы заблокированы из-за длительного бездействия!\nСообщите Администратору");
                             }
                         }
+                        else
+                        {
+                            if (result.getString(1).equals("new"))
+                            {
+                                System.out.println("Типа смена пароля");
+                            }
+                            else
+                            {
+                                String query1 = "SELECT true FROM staff WHERE id = '" + user.getIdUser() + "' AND password = '" + password + "';" ;
+                                T<ResultSet> t1 = query("lox", "1111", query1);
+                                if (t1.getItem().next())
+                                {
+                                    if (t1.getItem().getBoolean(1))
+                                    {
+                                        String query2 = "SELECT name.last_name, name.first_name, name.patronymic, rols.role FROM staff \n" +
+                                            "JOIN name ON staff.id_name = name.id\n" +
+                                            "JOIN rols ON rols.id_role = staff.id_role\n" +
+                                            "WHERE staff.id = '" + user.getIdUser() + "';";
+                                        t1 = query("lox", "1111", query2);
+                                        if (t1.getItem().next())
+                                        {
+                                            ResultSet r = t1.getItem();
+                                            user.setNameUser(r.getString(1));
+                                            user.setFirstnameUser(r.getString(2));
+                                            user.setPatronymic(r.getString(3));
+                                            user.setRoleUser(r.getString(4));
+                                            user.getData();
+                                        }
+                                        else
+                                        {
+                                            throw new New_Exception("Данные пользователя не заполнены полностью или повреждены!\nСообщите Администратору");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    t1 = query("lox","1111", "SELECT scope_auth FROM staff WHERE id ='" + user.getIdUser() + "';");
+                                    if (t1.getItem().next())
+                                    {
+                                        if (Integer.parseInt(t1.getItem().getString(1)) < 4) {
+                                            int i = Integer.parseInt(t1.getItem().getString(1)) + 1;
+                                            query("lox", "1111", "UPDATE staff SET scope_auth = '" + i + "' WHERE id ='" + user.getIdUser() + "';");
+                                        }
+                                        throw new New_Exception("Вы совершили ошибку при вводе пароля!!!\nВы будете заблокированы после" +
+                                                " " + (4 - Integer.parseInt(t1.getItem().getString(1))) + " попыток.");
+                                    }
+                                    else
+                                    {
+                                        throw new New_Exception("Ошибка базы данных!\nСообщите Администратору");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new New_Exception("Вы заблокированы!\nСообщите Администратору для выяснения причины");
                     }
                 }
             }
 
-            user_role = user.getRoleUser();
             //пока есть что-то в запросе (вроде как)
-            System.out.println("role user: " + user_role);
+            System.out.println("role user: " + user.getRoleUser());
 
             //определение что за роль
-            if (user_role.equals("admin"))
+            if (user.getRoleUser().equals("admin"))
             {
                 return role("admin", user);
             }
-            else if (user_role.equals("waiter"))
+            else if (user.getRoleUser().equals("waiter"))
             {
                 return role("waiter", user);
             }
-            else if (user_role.equals("povar"))
+            else if (user.getRoleUser().equals("povar"))
             {
                  return role("povar", user);
             }

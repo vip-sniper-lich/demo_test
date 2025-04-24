@@ -1,6 +1,5 @@
 package view;
 
-import controler.T;
 import model.ModelUser;
 import java.sql.*;
 import javax.swing.*;
@@ -8,7 +7,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import static controler.Controler.query;
 
 public class Admin extends JFrame
 {
@@ -25,6 +23,7 @@ public class Admin extends JFrame
 
     public Admin (ModelUser user)
     {
+
         this.user = user;
         avatar.setText("<html><><img src=https://kamtk.ru:9096/el-zurnal/el-dnevnik/Css/image1/profile.png alt=\"Изображение\" width=\"50\" height=\"50\" /> </html>");
         // задание размера и положения на экране фрейма
@@ -82,6 +81,7 @@ public class Admin extends JFrame
         //создание таблицы
         JTable table = new JTable(model);
 
+        /*
         //ссылка на базу данных
         String url = "jdbc:sqlite:database.db";
         //подключение драйвера
@@ -91,7 +91,7 @@ public class Admin extends JFrame
             if (conn != null)
             {
                 // Выполняем запрос к базе данных
-                String sql = "SELECT * FROM test_users";
+                String sql = "SELECT * FROM staff";
                 //це надо поверь
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
@@ -123,10 +123,10 @@ public class Admin extends JFrame
                 frame.setVisible(true);
             }
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
-            e.printStackTrace();
-        }
+
+        }*/
     }
 
     //функционал кнопки для добавления нового пользователя в бд

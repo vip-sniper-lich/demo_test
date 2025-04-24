@@ -3,10 +3,6 @@ package controler;
 import model.ModelUser;
 
 import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-
 import static controler.Controler.get_accept_in_bd;
 import static controler.Controler.query;
 
@@ -23,18 +19,50 @@ public class Controler_test
             System.out.println("2");
             ResultSet result = res.getItem();
             System.out.println("3");
-            LocalDate currentTime = LocalDate.now();
-            System.out.println("4");
-            //создание объекта для открытие интерфейса авторизации
-            System.out.println("Член группы " + currentTime);
-            if (result.next())
+            if(result.next())
             {
-                System.out.println(result.getString(2));
-                System.out.println(currentTime);
-                System.out.println(LocalDate.parse(result.getString(2)));
-                System.out.println("Член группы " + ChronoUnit.DAYS.between(currentTime, LocalDate.parse(result.getString(2))));
+                if(!result.getString(1).equals("bloced"))
+                {
+                    String query1 = "SELECT true FROM staff WHERE id = '" + user.getIdUser() + "' AND password = '1111';" ;
+                    String query2 = "SELECT true FROM staff WHERE id = '" + user.getIdUser() + "' AND password = '111';" ;
+                    T<ResultSet> t1 = query("lox", "1111", query1);
+                    if (t1.getItem() != null)
+                    {
+                        if (t1.getItem().next()) {
+                            if (t1.getItem().getBoolean(1))
+                            {
+                                System.out.println("Правильный вход: true");
+                            }
+                            else
+                            {
+                                System.out.println("Ошибка: false");
+                            }
+                            t1 = query("lox", "1111", query2);
+                            if (t1.getItem() != null)
+                            {
+                                if (t1.getItem().next()) {
+                                    System.out.println("\n\n\n true???? \n\n\n");
+                                    System.out.println(t1.getItem().getString(1));
+                                    if (t1.getItem().getBoolean(1)) {
+                                        System.out.println("Ошибка: true");
+                                    }
+                                }
+                                else
+                                {
+                                    System.out.println("Правильно: false");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            System.out.println("Не правильно: false");
+                        }
+                    }
+                }
             }
-        }catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             System.out.println("Ошибка подключения: " + e.getMessage());
         }
     }

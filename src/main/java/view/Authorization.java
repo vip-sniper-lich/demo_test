@@ -86,8 +86,7 @@ public class Authorization extends JFrame
             if (get_accept(login, password, getLocation_dialog()))
             {
                 LocalDate currentTime = LocalDate.now();
-                query("lox", "1111", "UPDATE staff SET date_open = '" + currentTime + "' WHERE login =" +
-                        "'" + login + "' AND password = '" + password + "';");
+                query("lox", "1111", "UPDATE staff SET date_open = '" + currentTime + "' WHERE login = '" + login + "';");
                 dispose();
             }
         }
