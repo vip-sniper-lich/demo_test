@@ -135,23 +135,40 @@ public class Controler
                                 {
                                     if (t1.getItem().getBoolean(1))
                                     {
-                                        String query2 = "SELECT name.last_name, name.first_name, name.patronymic, rols.role FROM staff \n" +
-                                            "JOIN name ON staff.id_name = name.id\n" +
-                                            "JOIN rols ON rols.id_role = staff.id_role\n" +
-                                            "WHERE staff.id = '" + user.getIdUser() + "';";
-                                        t1 = query("lox", "1111", query2);
+                                        t1 = query("lox","1111", "SELECT scope_auth FROM staff WHERE id ='" + user.getIdUser() + "';");
                                         if (t1.getItem().next())
                                         {
-                                            ResultSet r = t1.getItem();
-                                            user.setNameUser(r.getString(1));
-                                            user.setFirstnameUser(r.getString(2));
-                                            user.setPatronymic(r.getString(3));
-                                            user.setRoleUser(r.getString(4));
-                                            user.getData();
+                                            if (Integer.parseInt(t1.getItem().getString(1)) < 4)
+                                            {
+                                                String query2 = "SELECT name.last_name, name.first_name, name.patronymic, rols.role FROM staff \n" +
+                                                        "JOIN name ON staff.id_name = name.id\n" +
+                                                        "JOIN rols ON rols.id_role = staff.id_role\n" +
+                                                        "WHERE staff.id = '" + user.getIdUser() + "';";
+                                                t1 = query("lox", "1111", query2);
+                                                if (t1.getItem().next())
+                                                {
+                                                    ResultSet r = t1.getItem();
+                                                    user.setNameUser(r.getString(1));
+                                                    user.setFirstnameUser(r.getString(2));
+                                                    user.setPatronymic(r.getString(3));
+                                                    user.setRoleUser(r.getString(4));
+                                                    System.out.println("Сброс количества неудачных попыток");
+                                                    query("lox", "1111", "UPDATE staff SET scope_auth = '0' WHERE id ='" + user.getIdUser() + "';");
+                                                }
+                                                else
+                                                {
+                                                    throw new New_Exception("Данные пользователя не заполнены полностью или повреждены!\nСообщите Администратору");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                query("lox", "1111", "UPDATE staff SET status = 'bloced' WHERE id ='" + user.getIdUser() + "';");
+                                                throw new New_Exception("Вы были заблокированы из-за превышения лимита попыток!\nОбратитесь Администратору");
+                                            }
                                         }
                                         else
                                         {
-                                            throw new New_Exception("Данные пользователя не заполнены полностью или повреждены!\nСообщите Администратору");
+                                            throw new New_Exception("Ошибка базы данных!\nСообщите Администратору");
                                         }
                                     }
                                 }
@@ -160,12 +177,18 @@ public class Controler
                                     t1 = query("lox","1111", "SELECT scope_auth FROM staff WHERE id ='" + user.getIdUser() + "';");
                                     if (t1.getItem().next())
                                     {
-                                        if (Integer.parseInt(t1.getItem().getString(1)) < 4) {
+                                        if (Integer.parseInt(t1.getItem().getString(1)) < 4)
+                                        {
                                             int i = Integer.parseInt(t1.getItem().getString(1)) + 1;
                                             query("lox", "1111", "UPDATE staff SET scope_auth = '" + i + "' WHERE id ='" + user.getIdUser() + "';");
+                                            throw new New_Exception("Вы совершили ошибку при вводе пароля!!!\nВы будете заблокированы после" +
+                                                    " " + (3 - Integer.parseInt(t1.getItem().getString(1))) + " попыток.");
                                         }
-                                        throw new New_Exception("Вы совершили ошибку при вводе пароля!!!\nВы будете заблокированы после" +
-                                                " " + (4 - Integer.parseInt(t1.getItem().getString(1))) + " попыток.");
+                                        else
+                                        {
+                                            query("lox", "1111", "UPDATE staff SET status = 'bloced' WHERE id ='" + user.getIdUser() + "';");
+                                            throw new New_Exception("Вы были заблокированы из-за превышения лимита попыток!\nОбратитесь Администратору");
+                                        }
                                     }
                                     else
                                     {
